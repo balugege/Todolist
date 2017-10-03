@@ -1,0 +1,168 @@
+<html>
+  <head>
+
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+
+    <style>
+    @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400);
+    
+    body {
+    font: normal normal 13px/16px "Open Sans", sans-serif;
+    background: #ccc;
+    }
+    
+    .container{
+    padding: 20px;
+    width: 300px;
+    margin: 0 auto;
+    margin-top: 40px;
+    background: white;
+    border-radius: 5px;}
+    
+    form {
+    display: inline-block;
+    }
+    
+    input{
+    padding: 4px 15px 4px 5px;
+    }
+    
+    #button{
+    display: inline-block;
+    background-color:#fc999b;
+    color:#ffffff;
+    border-radius: 5px;
+    text-align:center;
+    margin-top:2px;
+    padding: 5px 15px;
+    }
+    
+    #button:hover{
+    cursor: pointer;
+    opacity: .8;}
+    
+    ol {padding-left: 20px;}
+    
+    ol li {padding: 5px;color:#000;}
+    
+    ol li:nth-child(even){background: #dfdfdf;}
+    
+    .strike{text-decoration: line-through;}
+    
+    li:hover{
+      cursor: pointer;
+     }
+    </style>
+
+    <script>
+    var entries;
+
+    $.ajax({
+      url: "/todo-api",
+      success: function( data ) {
+	entries = JSON.parse(data).entries;
+
+        for(entry of entries) {
+          $('ol').append('<li id="' + entry.id + '">' + entry.text + '</li>');
+
+          if(entry.done) {
+            $("#"+entry.id).addClass('strike');    
+          }
+
+          data = JSON.stringify({ "entries" : entries });
+        }
+      }
+    });
+
+    function addEntry(toAdd) {
+      if(toAdd === "") {
+        alert("cannot add an empty todo");
+        return;
+      }
+      var uid = guid();
+      $('ol').append('<li id="' + uid + '">' + toAdd + '</li>');
+      entries.push({id: uid, text: toAdd, done: false});
+      data = JSON.stringify({ "entries" : entries });
+
+      $.ajax({
+        type: "POST",
+        url: "/todo-api",
+        data: data,
+	dataType: "json",
+        processData: false,
+        contentType: 'application/json',
+      });
+    }
+
+    function guid() {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1);
+      }
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+        s4() + '-' + s4() + s4() + s4();
+    }
+
+    $(document).ready(
+        function(){
+            $('#button').click(
+                function(){
+                    var toAdd = $('input[name=ListItem]').val();
+	            addEntry(toAdd);		
+                });
+           
+           $("input[name=ListItem]").keyup(function(event){
+              if(event.keyCode == 13){
+                $("#button").click();
+              }         
+          });
+          
+          $(document).on('dblclick','li', function(){
+            $(this).addClass('strike');    
+            
+            for(entry of entries) {
+              if(entry.id === this.id) {
+                entry.done = true;
+                $.ajax({
+                  type: "POST",
+                  url: "/todo-api",
+                  data: JSON.stringify({"entries" : entries}),
+                  dataType: "json",
+                  processData: false,
+                  contentType: 'application/json',
+                });
+                break;
+              }
+            }
+          });
+          
+          $('input').focus(function() {
+            $(this).val('');
+          });
+          
+        }
+    );
+    </script>
+
+
+  </head>
+
+ <body>
+    <div class="container">
+       <h2>Simple To Do List</h2>
+       <p><em>Click and drag to reorder, double click to cross an item off.</em></p>
+       <form name="toDoList">
+          <input type="text" name="ListItem"/>
+       </form>
+       <div id="button">Add</div>
+       <br/>
+       <ol></ol>
+    </div>
+ </body>
+
+
+</html>

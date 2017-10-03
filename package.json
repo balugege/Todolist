@@ -1,0 +1,16 @@
+{
+  "name": "simpletodo",
+  "version": "0.0.0",
+  "scripts": {
+    "start": "node server"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "4.15.3",
+    "fs": "0.0.1-security"
+  }
+}
